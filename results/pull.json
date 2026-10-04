@@ -1,0 +1,35 @@
+{
+  "pulled": "2026-10-03",
+  "files": {
+    "CMO-Historical-Data-Monthly.xlsx": {
+      "url": "https://thedocs.worldbank.org/en/doc/74e8be41ceb20fa0da750cda2f6b9e4e-0050012026/related/CMO-Historical-Data-Monthly.xlsx",
+      "bytes": 586099,
+      "sha256": "ea1c350827878ea3bbe30e3cda16a13fd3bd5b409b8458940dc94a36b5a33154"
+    },
+    "DFII10.csv": {
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFII10",
+      "bytes": 99099,
+      "sha256": "4254decae9c981d312db77336e09b80624cd2aaf0b616c82f14c6fc4bc403407"
+    },
+    "T10YIE.csv": {
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=T10YIE",
+      "bytes": 98160,
+      "sha256": "798994d4bcae9e7b71b78bacfa5d18898942abfe9e410d8b49918648cf6edafc"
+    },
+    "DTWEXBGS.csv": {
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DTWEXBGS",
+      "bytes": 104437,
+      "sha256": "fb8c1f47a32780978add3c2134ee89762bd3114d62c355ce9cb86701782e49ed"
+    },
+    "VIXCLS.csv": {
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS",
+      "bytes": 161442,
+      "sha256": "cc0b59b37b714477d604de46fba408fd888e82308561111a772f3aacf931387f"
+    },
+    "CPIAUCSL.csv": {
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL",
+      "bytes": 17744,
+      "sha256": "f8ecddf53a9a9a74dda92c2c4204e6039466fcb744bc74171b73b5f6aac48119"
+    }
+  }
+}
