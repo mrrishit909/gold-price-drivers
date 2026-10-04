@@ -81,12 +81,17 @@ def main():
         return b, e
     bf, ef = fit("2006-02 to 2026-08", df); bp, ep = fit("2006-02 to 2021-12", tr); bq, eq = fit("2022-01 to 2026-08", po)
     pd.DataFrame(reg).to_csv(R / "regress.csv", index=False)
+    simple = []
+    for name, d in (("2006-02 to 2026-08", df), ("2006-02 to 2021-12", tr), ("2022-01 to 2026-08", po)):
+        b, inv, e, Xa = ols(d[["d_real_yield"]].to_numpy(), d["gold_return"].to_numpy()); se = hac(Xa, e, inv); simple.append({"sample": name, "slope": float(b[1]), "se": float(se[1]), "t": float(b[1] / se[1]), "r2": 1 - float(e @ e) / float(((d["gold_return"] - d["gold_return"].mean()) ** 2).sum()), "n": len(d)})
+    pd.DataFrame(simple).to_csv(R / "simple.csv", index=False)
     k = len(DRIVERS) + 1; rss_r, rss_u = float(ef @ ef), float(ep @ ep + eq @ eq); F = ((rss_r - rss_u) / k) / (rss_u / (n - 2 * k)); pd.DataFrame([{"f_statistic": F, "df1": k, "df2": n - 2 * k, "p_value": float(stats.f.sf(F, k, n - 2 * k)), "rss_pooled": rss_r, "rss_split": rss_u}]).to_csv(R / "chow.csv", index=False)
     pred = np.c_[np.ones(len(po)), po[DRIVERS].to_numpy()] @ bp; y = po["gold_return"].to_numpy(); sse = float(((y - pred) ** 2).sum()); sst0 = float(((y - tr["gold_return"].mean()) ** 2).sum()); sst1 = float(((y - y.mean()) ** 2).sum())
     pd.DataFrame([{"months": len(po), "r2_oos_vs_pre_mean": 1 - sse / sst0, "r2_in_post_sample_refit": float(1 - float(eq @ eq) / sst1), "rmse_pre_fit_on_post": float(np.sqrt(sse / len(po))), "rmse_post_sd": float(np.sqrt(sst1 / len(po))), "pre_mean_return": float(tr["gold_return"].mean()), "post_mean_return": float(y.mean())}]).to_csv(R / "oos_post.csv", index=False)
     rol = []
     for i in range(WIN, n + 1):
-        w = df.iloc[i - WIN:i]; b, inv, e, Xa = ols(w[DRIVERS].to_numpy(), w["gold_return"].to_numpy()); rol.append({"end_month": str(w.index[-1]), "coef_real_yield": float(b[1]), "coef_dollar": float(b[2]), "r2": 1 - float(e @ e) / float(((w["gold_return"] - w["gold_return"].mean()) ** 2).sum())})
+        w = df.iloc[i - WIN:i]; b, inv, e, Xa = ols(w[DRIVERS].to_numpy(), w["gold_return"].to_numpy()); b1, _, e1, _ = ols(w[["d_real_yield"]].to_numpy(), w["gold_return"].to_numpy()); ss = float(((w["gold_return"] - w["gold_return"].mean()) ** 2).sum())
+        rol.append({"end_month": str(w.index[-1]), "coef_real_yield": float(b[1]), "coef_dollar": float(b[2]), "r2": 1 - float(e @ e) / ss, "slope_real_yield_alone": float(b1[1]), "r2_real_yield_alone": 1 - float(e1 @ e1) / ss})
     pd.DataFrame(rol).to_csv(R / "rolling.csv", index=False)
     # forecasting next month's return
     yv = df["gold_return"].to_numpy(); X = df[DRIVERS].to_numpy(); mom = df["gold_return"].rolling(12).mean().to_numpy(); start = list(df.index.astype(str)).index(FC_START); preds = {k: [] for k in ("mean", "AR(1)", "momentum", "drivers, lagged", "drivers, same month (oracle)")}; act = []
@@ -108,9 +113,9 @@ def main():
     full = np.log(g[g.index >= pd.Period("1975-01", "M")]).diff().dropna().to_numpy() * 100; recent = df["gold_return"].to_numpy()
     n21 = 21; art = (n21 ** 2 - 1) / (4 * n21 ** 2 + 2)          # lag-1 autocorrelation of the changes of monthly averages of a daily random walk with 21 days a month (Working, 1960): sum (n-i)i / sum ((n-i)^2 + i^2)
     pd.DataFrame([{"sample": s, "lag": l, "autocorrelation": acf(x, l)} for s, x in (("1975-02 to 2026-09", full), ("2006-02 to 2026-08", recent)) for l in (1, 2, 3)] + [{"sample": "averaging alone: daily random walk, 21 days a month", "lag": 1, "autocorrelation": art}]).to_csv(R / "acf.csv", index=False)
-    summ = {"months_in_regression": n, "months_before_2022": len(tr), "months_from_2022": len(po), "forecast_months": len(act), "share_positive_return_forecast_sample": float((act > 0).mean()), "monthly_sd_2006_2026": float(df["gold_return"].std(ddof=1)), "annualised_sd_2006_2026": float(df["gold_return"].std(ddof=1) * np.sqrt(12)), **{f"sd_{c}": float(df[c].std(ddof=1)) for c in DRIVERS}}
+    summ = {"months_in_regression": n, "months_before_2022": len(tr), "months_from_2022": len(po), "forecast_months": len(act), "share_positive_return_forecast_sample": float((act > 0).mean()), "monthly_sd_2006_2026": float(df["gold_return"].std(ddof=1)), "annualised_sd_2006_2026": float(df["gold_return"].std(ddof=1) * np.sqrt(12)), **{f"sd_{c}": float(df[c].std(ddof=1)) for c in DRIVERS}, "corr_real_yield_dollar_before_2022": float(tr["d_real_yield"].corr(tr["d_dollar"])), "corr_real_yield_dollar_from_2022": float(po["d_real_yield"].corr(po["d_dollar"])), "corr_real_yield_breakeven_before_2022": float(tr["d_real_yield"].corr(tr["d_breakeven"])), "corr_real_yield_breakeven_from_2022": float(po["d_real_yield"].corr(po["d_breakeven"]))}
     pd.DataFrame(list(summ.items()), columns=["key", "value"]).to_csv(R / "summary.csv", index=False)
-    for f in ("audit", "longrun", "decades", "regress", "chow", "oos_post", "forecast", "acf", "summary"):
+    for f in ("audit", "longrun", "decades", "regress", "simple", "chow", "oos_post", "forecast", "acf", "summary"):
         print("==", f); print(pd.read_csv(R / f"{f}.csv").round(4).to_string(index=False))
 
 

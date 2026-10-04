@@ -10,3 +10,7 @@ sd_d_real_yield,0.1814670661878869
 sd_d_dollar,1.3244162012221132
 sd_d_breakeven,0.134968347651838
 sd_d_vix,4.82203140940937
+corr_real_yield_dollar_before_2022,0.34265860003484133
+corr_real_yield_dollar_from_2022,0.580778291978288
+corr_real_yield_breakeven_before_2022,-0.19834158104406216
+corr_real_yield_breakeven_from_2022,-0.03300428066873576

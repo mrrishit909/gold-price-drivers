@@ -138,6 +138,8 @@ def main():
         beta, inv, e, Xa = ols(X[a:b], ret[a:b]); se = hac(Xa, e, inv); r2 = 1 - rss(e) / tss(ret[a:b]); fits[name] = (beta, e)
         for j, term in enumerate(["intercept"] + DRIVERS):
             row = [r for r in table("regress") if r["sample"] == name and r["term"] == term][0]; same(f"{name} {term}", beta[j], row["coefficient"]); same("se", se[j], row["se"]); same("t", beta[j] / se[j], row["t"]); same("r2", r2, row["r2"]); same("n", b - a, row["n"])
+    for name, (a, b) in samples.items():
+        b1, inv1, e1, Xa1 = ols([[x[0]] for x in X[a:b]], ret[a:b]); se1 = hac(Xa1, e1, inv1); row = [r for r in table("simple") if r["sample"] == name][0]; same("simple slope", b1[1], row["slope"]); same("simple se", se1[1], row["se"]); same("simple t", b1[1] / se1[1], row["t"]); same("simple r2", 1 - rss(e1) / tss(ret[a:b]), row["r2"]); same("simple n", b - a, row["n"])
     k = 5; rr = rss(fits["2006-02 to 2026-08"][1]); ru = rss(fits["2006-02 to 2021-12"][1]) + rss(fits["2022-01 to 2026-08"][1]); F = ((rr - ru) / k) / (ru / (n - 2 * k)); d2 = n - 2 * k; p = betainc(d2 / 2, k / 2, d2 / (d2 + k * F)); c = table("chow")[0]
     same("F", F, c["f_statistic"]); same("df2", d2, c["df2"]); same("p", p, c["p_value"], 1e-6); same("rss pooled", rr, c["rss_pooled"]); same("rss split", ru, c["rss_split"])
     bp = fits["2006-02 to 2021-12"][0]; yp = ret[cut:]; pred = [bp[0] + sum(bp[1 + j] * x[j] for j in range(4)) for x in X[cut:]]; sse = sum((a - b) ** 2 for a, b in zip(yp, pred)); pm = mean(ret[:cut]); o = table("oos_post")[0]
@@ -145,6 +147,7 @@ def main():
     rolls = table("rolling"); assert len(rolls) == n - WIN + 1
     for j, r in enumerate(rolls):
         i = WIN + j; beta, inv, e, Xa = ols(X[i - WIN:i], ret[i - WIN:i]); yy, mm = ym(ms[i - 1]); assert r["end_month"] == f"{yy}-{mm:02d}"; same("rolling real yield", beta[1], r["coef_real_yield"]); same("rolling dollar", beta[2], r["coef_dollar"]); same("rolling r2", 1 - rss(e) / tss(ret[i - WIN:i]), r["r2"])
+        b1, _, e1, _ = ols([[x[0]] for x in X[i - WIN:i]], ret[i - WIN:i]); same("rolling slope alone", b1[1], r["slope_real_yield_alone"]); same("rolling r2 alone", 1 - rss(e1) / tss(ret[i - WIN:i]), r["r2_real_yield_alone"])
     mom = [None] * n
     for i in range(11, n):
         mom[i] = mean(ret[i - 11:i + 1])
@@ -171,6 +174,10 @@ def main():
     sd = math.sqrt(tss(ret) / (n - 1)); same("sd", sd, sm["monthly_sd_2006_2026"]); same("annual sd", sd * math.sqrt(12), sm["annualised_sd_2006_2026"])
     for j, name in enumerate(DRIVERS):
         same("sd " + name, math.sqrt(tss([x[j] for x in X]) / (n - 1)), sm["sd_" + name])
+    def corr(u, v):
+        mu, mv = mean(u), mean(v); return sum((p - mu) * (q - mv) for p, q in zip(u, v)) / math.sqrt(tss(u) * tss(v))
+    for nm, lo, hi in (("before_2022", 0, cut), ("from_2022", cut, n)):
+        same("corr dollar " + nm, corr([x[0] for x in X[lo:hi]], [x[1] for x in X[lo:hi]]), sm["corr_real_yield_dollar_" + nm]); same("corr breakeven " + nm, corr([x[0] for x in X[lo:hi]], [x[2] for x in X[lo:hi]]), sm["corr_real_yield_breakeven_" + nm])
     print(f"check.py: {n_ok} recomputed numbers agree with results/; everything is written out in plain Python from the downloaded files")
 
 
