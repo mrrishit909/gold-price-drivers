@@ -1,0 +1,23 @@
+check,value
+gold months,801
+first gold month,196001
+last gold month,202609
+gold months with no price,0
+analysis ends,202608
+"months without a consumer price index, 1960 to the end",1
+first month without one,202510
+DFII10 observations,5942
+DFII10 first month,200301
+DFII10 last month,202610
+T10YIE observations,5943
+T10YIE first month,200301
+T10YIE last month,202610
+DTWEXBGS observations,5198
+DTWEXBGS first month,200601
+DTWEXBGS last month,202609
+VIXCLS observations,9286
+VIXCLS first month,199001
+VIXCLS last month,202610
+CPIAUCSL observations,955
+CPIAUCSL first month,194701
+CPIAUCSL last month,202608

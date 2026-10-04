@@ -1,0 +1,13 @@
+key,value
+"nominal price, 1960-01",35.0
+"nominal price, latest month",4411.0
+nominal peak,5020.0
+nominal peak month,202602.0
+real peak before 2000 (August 2026 dollars),2891.518269230769
+real peak month before 2000,198001.0
+real low after that peak (August 2026 dollars),492.4833333333333
+real low month,200104.0
+"real price, latest month",4411.0
+first month the real price regained that peak,202502.0
+months below the real peak,541.0
+share of months in 1971-2026 with a real price below the real 1980 peak,0.9715142428785607
